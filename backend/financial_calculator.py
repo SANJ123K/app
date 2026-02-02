@@ -197,6 +197,89 @@ class FinancialCalculator:
         }
     
     @staticmethod
+    def adjust_plan_to_budget(plan: Dict, available_savings: float) -> Dict:
+        """Adjust plan based on available monthly savings"""
+        adjustments = {
+            "is_affordable": True,
+            "deficit": 0,
+            "suggestions": [],
+            "adjusted_plan": None
+        }
+        
+        required = plan["total_monthly_savings"]
+        
+        if required <= available_savings:
+            adjustments["is_affordable"] = True
+            return adjustments
+        
+        # Plan exceeds budget
+        adjustments["is_affordable"] = False
+        adjustments["deficit"] = required - available_savings
+        
+        # Create priority-based adjustments
+        wealth = plan["wealth"]
+        protection = plan["protection"]
+        
+        # Priority levels (essential to optional)
+        essential = {
+            "emergency_fund": wealth["emergency_fund"]["monthly_contribution"],
+            "term_insurance": protection["term_insurance"]["yearly_cost"] / 12,
+            "health_insurance": protection["health_insurance"]["yearly_cost"] / 12,
+        }
+        
+        important = {
+            "nps": wealth["nps_plan"]["monthly_contribution"],
+            "child_plans": sum([cp["yearly_deposit"] for cp in wealth["child_plans"]]) / 12 if wealth["child_plans"] else 0,
+        }
+        
+        optional = {
+            "mutual_funds": wealth["mutual_funds"]["monthly_sip"],
+            "gold": wealth["gold"]["monthly_amount"],
+            "stocks": wealth["stocks"]["monthly_amount"] if wealth.get("stocks") else 0,
+        }
+        
+        essential_total = sum(essential.values())
+        important_total = sum(important.values())
+        optional_total = sum(optional.values())
+        
+        # Generate suggestions based on deficit
+        if available_savings < essential_total:
+            adjustments["suggestions"].append({
+                "priority": "critical",
+                "message": f"Your available savings (₹{available_savings:.0f}) are less than essential protection (₹{essential_total:.0f}). Consider increasing income or reducing expenses."
+            })
+        elif available_savings < (essential_total + important_total):
+            adjustments["suggestions"].append({
+                "priority": "high",
+                "message": f"Focus on essentials first. Consider reducing or delaying child education plans until income increases."
+            })
+            # Suggest adjusted child plans
+            if important["child_plans"] > 0:
+                reduced_child = max(0, available_savings - essential_total)
+                adjustments["suggestions"].append({
+                    "priority": "medium",
+                    "message": f"Reduce child plan contributions to ₹{reduced_child:.0f}/month temporarily."
+                })
+        else:
+            # Can afford essential + important, adjust optional
+            available_for_optional = available_savings - essential_total - important_total
+            adjustments["suggestions"].append({
+                "priority": "medium",
+                "message": f"Allocate ₹{available_for_optional:.0f}/month to wealth building (mutual funds, gold)."
+            })
+            
+            # Suggest proportion
+            if available_for_optional > 0:
+                mf_percent = 0.7
+                gold_percent = 0.3
+                adjustments["suggestions"].append({
+                    "priority": "low",
+                    "message": f"Suggested allocation: ₹{available_for_optional * mf_percent:.0f} mutual funds, ₹{available_for_optional * gold_percent:.0f} gold."
+                })
+        
+        return adjustments
+    
+    @staticmethod
     def calculate_comprehensive_plan(profile_data: dict) -> Dict:
         """Calculate complete 20-year financial plan"""
         age = profile_data["age"]
@@ -210,6 +293,9 @@ class FinancialCalculator:
         
         # Calculate annual income
         annual_income = monthly_income * 12
+        
+        # Calculate available monthly savings
+        available_monthly_savings = monthly_income - monthly_expenses
         
         # 1. Protection
         term_insurance = FinancialCalculator.calculate_term_insurance_coverage(annual_income, age)
