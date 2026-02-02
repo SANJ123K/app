@@ -46,20 +46,26 @@ class FinancialCalculator:
     @staticmethod
     def calculate_health_insurance(family_size: int) -> Dict:
         """Calculate health insurance coverage"""
-        # Base coverage
+        # Rules:
+        # Couple (1-2) → ₹15 lakh
+        # Family with kids (3+) → ₹20 lakh
         if family_size <= 2:
-            cover = 1000000  # 10 lakh
-        elif family_size <= 4:
             cover = 1500000  # 15 lakh
         else:
             cover = 2000000  # 20 lakh
         
-        # Approximate yearly cost: ₹10k-15k per person
-        yearly_cost = family_size * 12500
+        # Cost: ₹15-20 lakh → ₹18,000 – ₹30,000 per year
+        if cover == 1500000:
+            yearly_cost = 18000
+        else:
+            yearly_cost = 24000
+        
+        monthly_cost = yearly_cost / 12
         
         return {
             "cover_amount": cover,
             "yearly_cost": yearly_cost,
+            "monthly_cost": round(monthly_cost, 2),
             "tips": [
                 "Choose room rent flexibility",
                 "Opt for family floater",
@@ -70,48 +76,44 @@ class FinancialCalculator:
     @staticmethod
     def calculate_emergency_fund(monthly_expenses: float) -> Dict:
         """Calculate emergency fund requirement"""
+        # Formula: Monthly Expense × 6
         required = monthly_expenses * 6
-        # Suggest building over 12 months
-        monthly_contribution = required / 12
+        
+        # Build period: 24 months (default)
+        build_period = 24
+        monthly_contribution = required / build_period
         
         return {
             "required_amount": round(required, 2),
             "monthly_contribution": round(monthly_contribution, 2),
+            "build_period": build_period,
             "tools": ["Auto-sweep account", "Liquid fund"]
         }
     
     @staticmethod
     def calculate_retirement_corpus(current_monthly_expense: float, age: int, retirement_age: int = 60) -> Dict:
-        """Calculate retirement corpus using 25x rule with inflation adjustment"""
+        """Calculate retirement corpus using simple formula"""
         years_to_retirement = retirement_age - age
         
-        # Annual expenses today
-        annual_expenses = current_monthly_expense * 12
+        # Target Corpus = Monthly Expense × 12 × 25 to 30 (using 30)
+        multiplier = 30
+        target_corpus = current_monthly_expense * 12 * multiplier
         
-        # Future annual expenses (inflation adjusted)
-        future_annual_expenses = annual_expenses * math.pow(1 + INFLATION_RATE, years_to_retirement)
+        # Simple formula (no compounding)
+        # Monthly NPS = Target Corpus ÷ Months left
+        months_left = years_to_retirement * 12
         
-        # Retirement corpus: 25-30x future annual expenses
-        target_corpus_min = future_annual_expenses * 25
-        target_corpus_max = future_annual_expenses * 30
-        target_corpus = (target_corpus_min + target_corpus_max) / 2
-        
-        # Calculate monthly NPS contribution needed
-        # Future value of annuity formula: FV = P * [((1 + r)^n - 1) / r]
-        r = NPS_EXPECTED_RETURN / 12  # Monthly rate
-        n = years_to_retirement * 12  # Total months
-        
-        if n > 0:
-            monthly_nps = target_corpus / (((math.pow(1 + r, n) - 1) / r) * (1 + r))
+        if months_left > 0:
+            monthly_nps = target_corpus / months_left
         else:
             monthly_nps = 0
         
         return {
             "target_corpus": round(target_corpus, 2),
             "years_to_retirement": years_to_retirement,
+            "months_left": months_left,
             "monthly_contribution": round(monthly_nps, 2),
-            "current_annual_expense": round(annual_expenses, 2),
-            "future_annual_expense": round(future_annual_expenses, 2)
+            "multiplier": multiplier
         }
     
     @staticmethod
