@@ -13,12 +13,25 @@ interface ProfileData {
   son_age: number | null;
 }
 
+interface PrioritySelection {
+  emergency_fund: boolean;
+  term_insurance: boolean;
+  health_insurance: boolean;
+  nps: boolean;
+  child_plans: boolean;
+  mutual_funds: boolean;
+  gold: boolean;
+  stocks: boolean;
+}
+
 interface PlanState {
   userId: string;
   currentStep: number;
   profile: ProfileData;
   calculatedPlan: any;
   goals: any[];
+  priorities: PrioritySelection;
+  editingComponent: string | null;
   
   setUserId: (id: string) => void;
   setCurrentStep: (step: number) => void;
@@ -27,6 +40,8 @@ interface PlanState {
   addGoal: (goal: any) => void;
   updateGoal: (goalId: string, data: any) => void;
   deleteGoal: (goalId: string) => void;
+  setPriority: (component: string, enabled: boolean) => void;
+  setEditingComponent: (component: string | null) => void;
   resetPlan: () => void;
 }
 
@@ -43,12 +58,25 @@ const initialProfile: ProfileData = {
   son_age: null,
 };
 
+const initialPriorities: PrioritySelection = {
+  emergency_fund: true,
+  term_insurance: true,
+  health_insurance: true,
+  nps: true,
+  child_plans: true,
+  mutual_funds: true,
+  gold: true,
+  stocks: false,
+};
+
 export const usePlanStore = create<PlanState>((set) => ({
   userId: 'user_' + Date.now(), // Generate a unique user ID
   currentStep: 0,
   profile: initialProfile,
   calculatedPlan: null,
   goals: [],
+  priorities: initialPriorities,
+  editingComponent: null,
   
   setUserId: (id) => set({ userId: id }),
   
@@ -72,10 +100,18 @@ export const usePlanStore = create<PlanState>((set) => ({
     goals: state.goals.filter(g => g.goal_id !== goalId)
   })),
   
+  setPriority: (component, enabled) => set((state) => ({
+    priorities: { ...state.priorities, [component]: enabled }
+  })),
+  
+  setEditingComponent: (component) => set({ editingComponent: component }),
+  
   resetPlan: () => set({
     currentStep: 0,
     profile: initialProfile,
     calculatedPlan: null,
     goals: [],
+    priorities: initialPriorities,
+    editingComponent: null,
   }),
 }));
