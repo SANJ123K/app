@@ -41,7 +41,7 @@ export default function ProtectionOverviewScreen() {
 
   const handleContinue = () => {
     setCurrentStep(3);
-    router.push('/results/summary');
+    router.push('/wizard/plan-builder');
   };
 
   if (loading) {
