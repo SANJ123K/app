@@ -117,21 +117,27 @@ class FinancialCalculator:
         }
     
     @staticmethod
-    def calculate_sukanya_samriddhi(daughter_age: int, yearly_deposit: float) -> Dict:
+    def calculate_sukanya_samriddhi(daughter_age: int, yearly_deposit: float = 150000) -> Dict:
         """Calculate Sukanya Samriddhi Yojana returns"""
+        # Max yearly deposit = ₹1.5 lakh
+        max_yearly = 150000
+        yearly_deposit = min(yearly_deposit, max_yearly)
+        
         # Can invest till girl turns 15, matures at 21
         years_of_investment = 15 - daughter_age if daughter_age < 15 else 0
         years_to_maturity = 21 - daughter_age
         
         if years_of_investment <= 0:
             return {
+                "yearly_deposit": yearly_deposit,
+                "monthly_equivalent": round(yearly_deposit / 12, 2),
                 "maturity_value": 0,
                 "years_to_maturity": years_to_maturity,
                 "total_investment": 0,
                 "message": "Can only invest till daughter turns 15"
             }
         
-        # Future value of annuity due (payments at start of year)
+        # Future value of annuity due (payments at start of year) - 8% rate
         r = SUKANYA_RATE
         n = years_to_maturity
         
@@ -144,6 +150,7 @@ class FinancialCalculator:
         
         return {
             "yearly_deposit": yearly_deposit,
+            "monthly_equivalent": round(yearly_deposit / 12, 2),
             "years_of_investment": years_of_investment,
             "years_to_maturity": years_to_maturity,
             "maturity_value": round(maturity_value, 2),
@@ -152,10 +159,13 @@ class FinancialCalculator:
         }
     
     @staticmethod
-    def calculate_ppf(yearly_deposit: float, years: int = 15) -> Dict:
+    def calculate_ppf(yearly_deposit: float = 50000, years: int = 15) -> Dict:
         """Calculate PPF returns"""
+        # Suggested yearly deposit = ₹50,000 – ₹1,00,000
+        # Assumed return = 7%
+        
         # Future value of annuity due
-        r = PPF_RATE
+        r = PPF_RATE  # 7.1%
         n = years
         
         maturity_value = yearly_deposit * (((math.pow(1 + r, n) - 1) / r) * (1 + r))
@@ -163,6 +173,7 @@ class FinancialCalculator:
         
         return {
             "yearly_deposit": yearly_deposit,
+            "monthly_equivalent": round(yearly_deposit / 12, 2),
             "tenure": years,
             "maturity_value": round(maturity_value, 2),
             "total_investment": total_investment,
