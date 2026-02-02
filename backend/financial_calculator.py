@@ -15,26 +15,31 @@ class FinancialCalculator:
     @staticmethod
     def calculate_term_insurance_coverage(annual_income: float, age: int) -> Dict:
         """Calculate term insurance coverage based on income and age"""
-        # Standard formula: 10-15x annual income
-        min_cover = annual_income * 10
-        max_cover = annual_income * 15
+        # Formula: 15-20x annual income
+        multiplier = 20  # Using 20x as recommended
+        recommended_cover = annual_income * multiplier
+        min_cover = annual_income * 15
+        max_cover = annual_income * 20
         
         # Tenure: till age 80
         tenure = 80 - age
         
-        # Approximate yearly cost: 0.05-0.08% of cover amount
-        yearly_cost_min = min_cover * 0.0005
-        yearly_cost_max = max_cover * 0.0008
+        # Estimated yearly premium: 0.8% - 1.2% of cover amount
+        yearly_cost_min = recommended_cover * 0.008
+        yearly_cost_max = recommended_cover * 0.012
+        yearly_cost = (yearly_cost_min + yearly_cost_max) / 2
         
         return {
             "min_cover": round(min_cover, 2),
             "max_cover": round(max_cover, 2),
-            "recommended_cover": round((min_cover + max_cover) / 2, 2),
+            "recommended_cover": round(recommended_cover, 2),
             "tenure": tenure,
+            "yearly_cost": round(yearly_cost, 2),
             "yearly_cost_range": {
                 "min": round(yearly_cost_min, 2),
                 "max": round(yearly_cost_max, 2)
             },
+            "monthly_cost": round(yearly_cost / 12, 2),
             "riders": ["Critical Illness", "Accidental Death"]
         }
     
