@@ -195,15 +195,16 @@ class FinancialCalculator:
     
     @staticmethod
     def calculate_goal_requirement(amount_today: float, years: int, inflation: float = INFLATION_RATE) -> Dict:
-        """Calculate inflation-adjusted goal requirement"""
+        """Calculate inflation-adjusted goal requirement with simple formula"""
+        # Step 1: Inflate goal
+        # Future Cost = Amount × (1.06 ^ years)
         future_cost = amount_today * math.pow(1 + inflation, years)
         
-        # Calculate monthly savings needed (assuming 10% returns)
-        r = 0.10 / 12
-        n = years * 12
-        
-        if n > 0:
-            monthly_saving = future_cost / (((math.pow(1 + r, n) - 1) / r) * (1 + r))
+        # Step 2: Monthly saving (simple)
+        # Monthly saving = Future Cost ÷ (years × 12)
+        months = years * 12
+        if months > 0:
+            monthly_saving = future_cost / months
         else:
             monthly_saving = future_cost
         
@@ -211,7 +212,8 @@ class FinancialCalculator:
             "amount_today": amount_today,
             "future_cost": round(future_cost, 2),
             "years": years,
-            "monthly_saving": round(monthly_saving, 2)
+            "monthly_saving": round(monthly_saving, 2),
+            "inflation_rate": inflation * 100
         }
     
     @staticmethod
