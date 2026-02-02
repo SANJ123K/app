@@ -330,23 +330,25 @@ class FinancialCalculator:
         # 4. Child Plans
         child_plans = []
         if has_daughter and daughter_age is not None and daughter_age < 10:
-            # Suggest ₹50k per year for Sukanya
-            sukanya_deposit = 50000
+            # Sukanya: Max yearly deposit = ₹1.5 lakh
+            sukanya_deposit = 150000  # Max amount
             sukanya = FinancialCalculator.calculate_sukanya_samriddhi(daughter_age, sukanya_deposit)
             child_plans.append({
                 "scheme_name": "Sukanya Samriddhi Yojana",
-                "yearly_deposit": sukanya_deposit,
+                "yearly_deposit": sukanya["yearly_deposit"],
+                "monthly_equivalent": sukanya["monthly_equivalent"],
                 "maturity_value": sukanya["maturity_value"],
                 "years_to_maturity": sukanya["years_to_maturity"]
             })
         
         if has_son:
-            # Suggest ₹50k per year for PPF
+            # PPF: Suggested yearly deposit = ₹50,000 – ₹1,00,000 (using 50k)
             ppf_deposit = 50000
             ppf = FinancialCalculator.calculate_ppf(ppf_deposit)
             child_plans.append({
                 "scheme_name": "PPF",
-                "yearly_deposit": ppf_deposit,
+                "yearly_deposit": ppf["yearly_deposit"],
+                "monthly_equivalent": ppf["monthly_equivalent"],
                 "maturity_value": ppf["maturity_value"],
                 "years_to_maturity": 15
             })
