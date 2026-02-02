@@ -395,5 +395,51 @@ class FinancialCalculator:
                 } if stock_amount > 0 else None
             },
             "total_monthly_savings": round(monthly_commitments + mf_amount + gold_amount + stock_amount, 2),
-            "surplus": round(surplus, 2)
+            "surplus": round(surplus, 2),
+            "available_monthly_savings": round(available_monthly_savings, 2),
+            "affordability": FinancialCalculator.adjust_plan_to_budget(
+                {
+                    "protection": {
+                        "term_insurance": {
+                            "cover_amount": term_insurance["recommended_cover"],
+                            "tenure": term_insurance["tenure"],
+                            "yearly_cost": term_insurance["yearly_cost_range"]["min"],
+                            "riders": term_insurance["riders"]
+                        },
+                        "health_insurance": {
+                            "cover_amount": health_insurance["cover_amount"],
+                            "family_size": family_size,
+                            "yearly_cost": health_insurance["yearly_cost"]
+                        }
+                    },
+                    "wealth": {
+                        "emergency_fund": emergency_fund,
+                        "nps_plan": {
+                            "target_corpus": retirement["target_corpus"],
+                            "monthly_contribution": retirement["monthly_contribution"],
+                            "expected_value": retirement["target_corpus"],
+                            "years_to_retirement": retirement["years_to_retirement"]
+                        },
+                        "child_plans": child_plans,
+                        "mutual_funds": {
+                            "monthly_sip": round(mf_amount, 2),
+                            "index_allocation": round(mf_amount * 0.6, 2),
+                            "active_allocation": round(mf_amount * 0.4, 2),
+                            "expected_return": 13.0,
+                            "projected_value": mf_future_value
+                        },
+                        "gold": {
+                            "monthly_amount": round(gold_amount, 2),
+                            "percentage": 7.5
+                        },
+                        "stocks": {
+                            "monthly_amount": round(stock_amount, 2),
+                            "percentage": 15.0,
+                            "risk_disclaimer": True
+                        } if stock_amount > 0 else None
+                    },
+                    "total_monthly_savings": round(monthly_commitments + mf_amount + gold_amount + stock_amount, 2)
+                },
+                available_monthly_savings
+            )
         }
